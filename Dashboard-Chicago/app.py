@@ -5,6 +5,7 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
+from streamlit_option_menu import option_menu
 
 ##########################################
 #Definimos la instancia
@@ -38,18 +39,85 @@ def load_data():
 df, numeric_cols, text_cols, unique_categories_room_type, numeric_df = load_data()
 
 ##########################################
-#CREACION DEL DASHBOARD
-#Generamos las paginas que utilizaremos en el diseno
-#Widget 1: Selectbox
-#Menu desplegable de opciones de las paginas seleccionadas
-View = st.selectbox(label = "View", options = ["Modelado explicativo", "Modelado predictivo", "View 3", "View 4"])
+#Dashboard
+
+st.set_page_config(layout="wide")
+#Navbar
+View = option_menu(
+    menu_title=None,  # Oculta el título
+    options= ["Inicio", "Modelado explicativo", "Modelado predictivo"],
+    icons=["house", "graph-up", "cpu"],  # Íconos de Bootstrap
+    menu_icon="cast",
+    default_index=0,
+    orientation="horizontal",
+)
 
 ##########################################
-#CONTENIDO DE LA VISTA 1
+#Index
 
-if View == "Modelado explicativo":
+if View == "Inicio":
+    st.title("Airbnb, Chicago  Illinois")
+    st.write("Este dashboard presenta un Modelado explicativo usando un análisis univariado "
+                        "de las variables categóricas más significativas y un Modelado predictivo usando "
+                        "un análisis aplicando regresión lineal simple, regresión lineal multiple y regresión logistica,"
+                        "esto haciendo uso de los datos propios de Airbnb acerca de la ciudad de Chicago Illinois, EU.")
+    img, title = st.columns([1, 7])
+    left, right = st.columns([3, 1])
+    img.image("img/airbnb.png", width=80)
+    title.header("Acerca de Airbnb")
+    left.subheader("¿Que es?")
+    left.write("Airbnb es una plataforma digital que conecta a personas que desean alquilar su propiedad "
+                            "(total o parcialmente) con viajeros que buscan alojamiento temporal. Fundada en 2008, "
+                            "Airbnb ha transformado la industria del hospedaje, ofreciendo alternativas más flexibles y "
+                            "personalizadas que los hoteles tradicionales.A través de su modelo de economía colaborativa, "
+                            "permite que anfitriones publiquen espacios disponibles y que huéspedes puedan reservarlos de "
+                            "forma segura, utilizando filtros como precio, ubicación, tipo de propiedad, calificaciones, y más.")
+    right.image("img/airbnb.jpg", width=300)
+    st.subheader("Datos relevantes:")
+    st.markdown("""
+                                    - Opera en más de 220 países y regiones.
+                                    - Más de 4 millones de anfitriones en todo el mundo.
+                                    - Más de 150 millones de usuarios han reservado a través de la plataforma.
+                                    - Ofrece desde alojamientos económicos hasta opciones de lujo (Airbnb Luxe).
+                                    """)
+    img, title = st.columns([1, 7])
+    left, right = st.columns([1, 3])
+    img.image("img/usa.png", width=80)
+    title.header("Acerca de Chicago")
+    right.subheader("¿Por qué Chicago?")
+    right.write("Chicago, ubicada en el estado de Illinois, es la tercera ciudad más grande de Estados Unidos y uno "
+                        "de los destinos turísticos y culturales más importantes del país. Con una arquitectura emblemática, "
+                        "una escena artística vibrante y una rica historia, la ciudad atrae a millones de visitantes cada año.")
+    right.write("En el contexto de Airbnb, Chicago representa un mercado urbano dinámico con una gran diversidad "
+                                "de alojamientos, desde apartamentos modernos en el centro hasta casas históricas en barrios "
+                                "residenciales. Su perfil turístico, junto con eventos internacionales y zonas de alta demanda como "
+                                "The Loop, Lincoln Park o Wicker Park, la convierten en un punto clave para el análisis de comportamiento "
+                                "en plataformas de hospedaje.")
+    left.image("img/chicago.jpg", width=300)
+    st.subheader("Datos relevantes:")
+    st.markdown("""
+                                    - 📍 Ubicación: Estado de Illinois, Estados Unidos
+                                    - 🌆 Población: Aproximadamente 2.7 millones de habitantes.
+                                    - 🗺️ Ubicación estratégica: A orillas del lago Míchigan, con vistas panorámicas y actividades acuáticas.
+                                    - ✈️ Fácil acceso internacional: El Aeropuerto O’Hare es uno de los más transitados del mundo, con vuelos a casi todos los continentes.
+                                    - 🏙️ Principales atracciones:
+                                        - Millennium Park (con el famoso "Bean")
+                                        - Willis Tower (Skydeck con piso de vidrio)
+                                        - Art Institute of Chicago (uno de los mejores museos del mundo)
+                                        - Riverwalk (paseo a lo largo del río Chicago)
+                                        - Navy Pier (zona de entretenimiento junto al lago)
+                                    - 🍕 Gastronomía icónica:
+                                        - Pizza estilo Chicago (deep-dish)
+                                        - Hot dogs "Chicago-style"
+                                        - Gran oferta multicultural en barrios como Pilsen, Chinatown y Little Italy
+                                    """)
+
+##########################################
+#Modelado explicativo
+
+elif View == "Modelado explicativo":
 #Generamos los encabezados para el dashboard
-    st.title("TITANIC")
+    st.title("Air bnb Chicago")
     st.header("Panel principal")
     st.subheader("Line Plot")
 ##########################################
@@ -109,7 +177,7 @@ if View == "Modelado explicativo":
 #Contenido de la vista 2
 elif View == "Modelado predictivo":
 #Generamos los encabezados para el dashboard
-    st.title("Titatic")
+    st.title("Air bnb Chicago")
     st.header("Panel principal")
     st.subheader("Scatter plot")
 
@@ -124,7 +192,7 @@ elif View == "Modelado predictivo":
 #Contenido de la vista 3
 elif View == "View 3":
 #Generamos los encabezados para el dashboard
-    st.title("Titatic")
+    st.title("Air bnb Chicago")
     st.header("Panel principal")
     st.subheader("Pie plot")
 
@@ -144,7 +212,7 @@ elif View == "View 3":
 #Contenido de la vista 4
 elif View == "View 4":
 #Generamos los encabezados para el dashboard
-    st.title("Titatic")
+    st.title("Air bnb Chicago")
     st.header("Panel principal")
     st.subheader("Bar plot")
 
