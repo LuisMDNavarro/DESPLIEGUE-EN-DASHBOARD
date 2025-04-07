@@ -6,6 +6,8 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 from streamlit_option_menu import option_menu
+from funpymodeling.exploratory import freq_tbl
+import numpy as np
 
 ##########################################
 #Definimos la instancia
@@ -17,6 +19,7 @@ from streamlit_option_menu import option_menu
 def load_data():
     #Lectura del archivo csv
     df =pd.read_csv("50_sin_nulos_ni_atipicos_Chicago_Illinois_UnitedStates.csv")
+    df = df.drop(['Unnamed: 0'], axis = 1)
 
     #Selecciono las columnas tipo numericas del dataframe
     numeric_df = df.select_dtypes(['float', 'int'])   #Devuelve columnas
@@ -26,17 +29,17 @@ def load_data():
     text_df = df.select_dtypes(['object'])   #Devuelve columnas
     text_cols = text_df.columns                         #Devuelve lista de columnas
 
-    #Selecciono algunas columnas categoricas de valores para desplegar en diferentes 
-    categorical_column_sex = df['room_type']
+    #Selecciono algunas columnas categoricas de valores para desplegar en sus diferentes categorias
+    categorical_column_room_type = df['room_type']
     #Obtengo los valores unicos de la columna categorica seleccionada
-    unique_categories_room_type = categorical_column_sex.unique()
+    unique_categories_room_type = categorical_column_room_type.unique()
 
-    return df, numeric_cols, text_cols, unique_categories_room_type, numeric_df
+    return df, numeric_cols, text_cols, unique_categories_room_type, numeric_df, text_df
 
 ##########################################
 #Cargo los datos obtenidos de la funcion "load_data"
 
-df, numeric_cols, text_cols, unique_categories_room_type, numeric_df = load_data()
+df, numeric_cols, text_cols, unique_categories_room_type, numeric_df, text_df = load_data()
 
 ##########################################
 #Dashboard
@@ -48,7 +51,7 @@ View = option_menu(
     options= ["Inicio", "Modelado explicativo", "Modelado predictivo"],
     icons=["house", "graph-up", "cpu"],  # Íconos de Bootstrap
     menu_icon="cast",
-    default_index=0,
+    default_index=1,
     orientation="horizontal",
 )
 
@@ -116,62 +119,157 @@ if View == "Inicio":
 #Modelado explicativo
 
 elif View == "Modelado explicativo":
-#Generamos los encabezados para el dashboard
-    st.title("Air bnb Chicago")
-    st.header("Panel principal")
-    st.subheader("Line Plot")
-##########################################
-#Generamos los encabezados para la barra lateral (sidebar)
-    st.sidebar.title("DASHBOARD")
-    st.sidebar.header("Sidebar")
-    st.sidebar.subheader("Panel de eleccion")
-##########################################
-#Widget 2: Checkbox
-#Generamos un cuadro de seleccion (checkbox) en una barra lateral (sidebar) para mostrar el dataset
-    check_box = st.sidebar.checkbox(label = "Mostrar Dataset")
 
-#Condicional para que aparezca el dataframe
+    #Variable para tipo de variable a graficar
+    if 'variable_type' not in st.session_state:
+        st.session_state.variable_type = 'numeric'
+
+    #Titulos y encabezados
+    st.title("Airbnb Chicago")
+    st.sidebar.title("DASHBOARD")
+    st.sidebar.header("⚙️ Opciones")
+
+    #Cambiar entre numericas y categoricas
+    st.sidebar.subheader("🧬 Variable")
+    button_type_variable = st.sidebar.button(label = "Cambiar tipo de variable")
+    if button_type_variable:
+        if st.session_state.variable_type == 'numeric':
+            st.session_state.variable_type = 'categoric'
+        else:
+            st.session_state.variable_type = 'numeric'
+    
+    if st.session_state.variable_type == 'numeric':
+        category_variable_selected = st.sidebar.selectbox(label = "Variables categoricas", options = text_cols)
+        table = freq_tbl(df[category_variable_selected])
+    else:
+        numeric_variable_selected = st.sidebar.selectbox(label = "Variables numericas", options = numeric_cols)
+        #Categorizar la variable numerica
+        dataNumeric = df.copy()
+        n = 8269
+        Max = dataNumeric[numeric_variable_selected].max()
+        Min = dataNumeric[numeric_variable_selected].min()
+        R = Max - Min
+        ni = max(5, min(12, round(1 + 3.32 * np.log10(n))))
+        intervalos = np.linspace(Min, Max, ni + 1)
+        categorias = [f"Intervalo de: {intervalos[i]:.2f} a {intervalos[i+1]:.2f}" for i in range(len(intervalos) - 1)]
+        dataNumeric[numeric_variable_selected] = pd.cut(x = dataNumeric[numeric_variable_selected], bins = intervalos, labels = categorias)
+        table = freq_tbl(dataNumeric[numeric_variable_selected])
+
+    #Cambiar la frecuencia para los graficos
+    st.sidebar.subheader("🔍 Filtro de frecuencia")
+    frequency = st.sidebar.number_input("Frecuencia: " , min_value=0, max_value=None, value=0, step=None, format="%d")
+
+    #Mostrar analisis univariado
+    st.sidebar.subheader("🧪 Análisis univariado")
+    check_box_analysis = st.sidebar.checkbox(label = "Mostrar analisis")
+    if check_box_analysis:
+        #Obtengo un analisis univariado de una variable en especifico
+        if st.session_state.variable_type == 'numeric':
+            st.header("Análisis univariado de: " + category_variable_selected)
+        else:
+            st.header("Análisis univariado de: " + numeric_variable_selected)
+        table2 = table[table['frequency'] > frequency]
+        st.write(table2)
+
+    #Mostrar graficos
+    st.sidebar.subheader("Graficos 📊")
+    check_box_line = st.sidebar.checkbox(label = "📈 Grafico de lineas")
+    check_box_bars = st.sidebar.checkbox(label = "📊 Grafico de barras")
+    check_box_scatter = st.sidebar.checkbox(label = "🟢 Grafico de dispersion")
+    check_box_area = st.sidebar.checkbox(label = "📉 Grafico de area")
+    check_box_pie = st.sidebar.checkbox(label = "🥧 Grafico de pastel")
+
+
+    if  check_box_line or check_box_bars or check_box_scatter or check_box_area or check_box_pie:
+        if st.session_state.variable_type == 'numeric':
+            st.header("Graficos de: " + category_variable_selected)
+        else: 
+            st.header("Graficos de: " + numeric_variable_selected)
+
+    if check_box_line:
+        st.subheader("Line Plot")
+        if st.session_state.variable_type == 'numeric':
+            table2 = table.drop(['percentage', 'cumulative_perc'], axis = 1)
+            Filtro = table2[table2['frequency'] > frequency]
+            figure1 = px.line(data_frame = Filtro, x = category_variable_selected, 
+            y = "frequency", width = 1600, height =600)
+        else:
+            table2 = table.drop(['percentage', 'cumulative_perc'], axis = 1)
+            Filtro = table2[table2['frequency'] > frequency]
+            figure1 = px.line(data_frame = Filtro, x = numeric_variable_selected, 
+            y = "frequency", width = 1600, height =600)
+
+        st.plotly_chart(figure1)
+
+    if check_box_bars:
+        st.subheader("Bar Plot")
+        if st.session_state.variable_type == 'numeric':
+            table2 = table.drop(['percentage', 'cumulative_perc'], axis = 1)
+            Filtro = table2[table2['frequency'] > frequency]
+            figure1 = px.bar(data_frame = Filtro, x = category_variable_selected, 
+            y = "frequency", color= category_variable_selected, width = 1600, height =600)
+        else:
+            table2 = table.drop(['percentage', 'cumulative_perc'], axis = 1)
+            Filtro = table2[table2['frequency'] > frequency]
+            figure1 = px.bar(data_frame = Filtro, x = numeric_variable_selected, 
+            y = "frequency", color= numeric_variable_selected, width = 1600, height =600)
+
+        st.plotly_chart(figure1)
+
+    if check_box_scatter:
+        st.subheader("Scatter Plot")
+        if st.session_state.variable_type == 'numeric':
+            table2 = table.drop(['percentage', 'cumulative_perc'], axis = 1)
+            Filtro = table2[table2['frequency'] > frequency]
+            figure1 = px.scatter(data_frame = Filtro, x = category_variable_selected, 
+            y = "frequency", width = 1600, height =600)
+        else:
+            table2 = table.drop(['percentage', 'cumulative_perc'], axis = 1)
+            Filtro = table2[table2['frequency'] > frequency]
+            figure1 = px.scatter(data_frame = Filtro, x = numeric_variable_selected, 
+            y = "frequency", width = 1600, height =600)
+
+        st.plotly_chart(figure1)
+
+    if check_box_area:
+        st.subheader("Area Plot")
+        if st.session_state.variable_type == 'numeric':
+            table2 = table.drop(['percentage', 'cumulative_perc'], axis = 1)
+            Filtro = table2[table2['frequency'] > frequency]
+            figure1 = px.area(data_frame = Filtro, x = category_variable_selected, 
+            y = "frequency", width = 1600, height =600)
+        else:
+            table2 = table.drop(['percentage', 'cumulative_perc'], axis = 1)
+            Filtro = table2[table2['frequency'] > frequency]
+            figure1 = px.area(data_frame = Filtro, x = numeric_variable_selected, 
+            y = "frequency", width = 1600, height =600)
+
+        st.plotly_chart(figure1)
+
+    if check_box_pie:
+        st.subheader("Pie Plot")
+        if st.session_state.variable_type == 'numeric':
+            table2 = table.drop(['percentage', 'cumulative_perc'], axis = 1)
+            Filtro = table2[table2['frequency'] > frequency]
+            figure1 = px.pie(data_frame = Filtro, names = category_variable_selected, 
+            values = "frequency", width = 1600, height =600)
+        else:
+            table2 = table.drop(['percentage', 'cumulative_perc'], axis = 1)
+            Filtro = table2[table2['frequency'] > frequency]
+            figure1 = px.pie(data_frame = Filtro, names = numeric_variable_selected, 
+            values = "frequency", width = 1600, height =600)
+
+        st.plotly_chart(figure1)
+
+    
+    #Mostrar Dataset
+    st.sidebar.subheader("ℹ️ Dataset")
+    check_box = st.sidebar.checkbox(label = "Mostrar Dataset")
     if check_box:
-        #Mostramos el dataset
+        st.subheader("Dataset info:")
         st.write(df)
         st.write(df.columns)
         st.write(df.describe())
-##########################################
-#Widget 3: Multiselect box
-#Generamos un cuadro de multi-seleccion (Y) para seleccionar variables a graficar
-    numerics_vars_selected = st.sidebar.multiselect(label = "Variables graficadas", options = numeric_cols)
-
-##########################################
-#Widget 3: Selectbox
-#Menu desplegable de opciones de la variable categorica seleccionada
-    category_selected = st.sidebar.selectbox(label = "Categorias", options = unique_categories_room_type)
-
-##########################################
-#Widget 4: Button
-#Generamos un button (Button) en la barra lateral (sidebar) para mostrar las variables tipo texto
-    Button = st.sidebar.button(label = "Mostrar variables STRING")
-
-#Condicional para que aparezca el dataframe
-    if Button:
-#Mostramos el dataset
-        st.write(text_cols)
-
-##########################################
-#Graph 1: LINEPLOT
-#Despliegue de un line plot, definiendo las variables "X categorias y Y numericas"
-    data = df[df['room_type'] == category_selected]
-    data_features = data[numerics_vars_selected]
-    figure1 = px.line(data_frame = data_features, x = data_features.index, 
-                            y = numerics_vars_selected, title = str('Features of rooms'), 
-                            width = 1600, height =600)
-
-#Generamos un button (Button) en la barra lateral (sidebar) para mostrar el lineplot
-    Button2  = st.sidebar.button(label = "Mostrar grafica tipo lineplot")
-
-#Condicional para que aparezca la grafica tipo line plot
-    if Button2:
-#Mostramos el lineplot
-        st.plotly_chart(figure1)
 
 ##########################################
 #Contenido de la vista 2
