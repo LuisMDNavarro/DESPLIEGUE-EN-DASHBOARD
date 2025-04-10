@@ -183,6 +183,7 @@ elif View == "Modelado explicativo":
     check_box_scatter = st.sidebar.checkbox(label = "🟢 Grafico de dispersion")
     check_box_area = st.sidebar.checkbox(label = "📉 Grafico de area")
     check_box_pie = st.sidebar.checkbox(label = "🥧 Grafico de pastel")
+    check_box_box = st.sidebar.checkbox(label = "📦 Grafico de caja")
 
     if  check_box_line or check_box_bars or check_box_scatter or check_box_area or check_box_pie:
         if st.session_state.variable_type == 'categoric':
@@ -264,6 +265,15 @@ elif View == "Modelado explicativo":
             values = "frequency", width = 1600, height =600)
 
         st.plotly_chart(figure1)
+
+    if check_box_box:
+        st.subheader("Box Plot")
+        if st.session_state.variable_type == 'categoric':
+            figure1 = px.box(df, x=category_variable_selected, orientation='h')
+        else:
+            figure1 = px.box(df, x=numeric_variable_selected, orientation='h')
+
+        st.plotly_chart(figure1)
     
     #Mostrar Dataset
     st.sidebar.subheader("ℹ️ Dataset")
@@ -326,6 +336,7 @@ elif View == "Modelado predictivo":
     dichotomous_column = df[y_selected_log]
     unique_categories = dichotomous_column.unique()
     val_selected_log = st.sidebar.selectbox(label = "Valor a predecir", options = unique_categories)
+    check_box_box_log = st.sidebar.checkbox(label = "📦 Grafico de caja", key= "log_box")
     check_box_matriz = st.sidebar.checkbox(label = "❓🔲 Matriz de confusion")
     check_box_info_log = st.sidebar.checkbox(label = "ℹ️ Informacion del modelo", key = "log_info")
 
@@ -411,7 +422,7 @@ elif View == "Modelado predictivo":
             st.write("Selecione alguna variable x")
 
     #Regresion logistica
-    if check_box_matriz or check_box_info_log:
+    if check_box_matriz or check_box_info_log or check_box_box_log:
         st.header("Regresion Logistica")
         if x_selected_log:
             df2 = df.copy()
@@ -434,6 +445,13 @@ elif View == "Modelado predictivo":
         else:
             st.write("Selecione alguna variable x")
     
+    if check_box_box_log:
+        st.subheader("Box Plot")
+        st.write("Nota: Se recomienda usar solo una varibale X para este grafico")
+        if x_selected_log:
+            figure1 = px.box(df, x=x_selected_log, y=y_selected_log )
+            st.plotly_chart(figure1)
+
     if check_box_matriz:
         st.subheader('Matriz de Confusion')
         if x_selected_log:
