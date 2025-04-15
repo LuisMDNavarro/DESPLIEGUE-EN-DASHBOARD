@@ -19,6 +19,7 @@ from sklearn.metrics import recall_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.figure_factory as ff
+import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")
 ##########################################
@@ -59,6 +60,15 @@ View = option_menu(
     default_index=0,
     orientation="horizontal",
 )
+
+#Logo
+import base64
+def get_img_as_base64(file_path):
+    with open(file_path, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+img_base64 = get_img_as_base64("img/airbnb.png")
 
 ##########################################
 #Index
@@ -130,8 +140,23 @@ elif View == "Modelado explicativo":
         st.session_state.variable_type = 'numeric'
 
     #Titulos y encabezados
-    st.title("Airbnb Chicago")
+    st.sidebar.markdown(f"""
+    <div style="display: flex; align-items: center;">
+        <img src="data:image/png;base64,{img_base64}" width="70">
+        <h1 style="margin-left: 10px; margin-bottom: 0;">Airbnb Chicago</h1>
+    </div>
+    """, unsafe_allow_html=True)
     st.sidebar.title("DASHBOARD")
+
+    #Mostrar Dataset
+    st.sidebar.subheader("ℹ️ Dataset")
+    check_box = st.sidebar.checkbox(label = "Mostrar Dataset")
+    if check_box:
+        st.subheader("Dataset info:")
+        st.write(df)
+        st.write(df.columns)
+        st.write(df.describe())
+
     st.sidebar.header("⚙️ Opciones")
 
     #Cambiar entre numericas y categoricas
@@ -274,15 +299,6 @@ elif View == "Modelado explicativo":
             figure1 = px.box(df, x=numeric_variable_selected, orientation='h')
 
         st.plotly_chart(figure1)
-    
-    #Mostrar Dataset
-    st.sidebar.subheader("ℹ️ Dataset")
-    check_box = st.sidebar.checkbox(label = "Mostrar Dataset")
-    if check_box:
-        st.subheader("Dataset info:")
-        st.write(df)
-        st.write(df.columns)
-        st.write(df.describe())
 
 ##########################################
 #Contenido de la vista 2
@@ -291,10 +307,23 @@ elif View == "Modelado predictivo":
     #Variable para tipo de variable a graficar
     if 'variable_type' not in st.session_state:
         st.session_state.variable_type = 'numeric'
-        
+
+    if st.session_state.variable_type == 'categoric':
+            for col in text_cols:
+                frequencies = text_df[col].value_counts()
+                text_df[col] = text_df[col].map(frequencies)
+
     #Titulos y encabezados 
-    st.title("Airbnb Chicago")
+    st.sidebar.markdown(f"""
+    <div style="display: flex; align-items: center;">
+        <img src="data:image/png;base64,{img_base64}" width="70">
+        <h1 style="margin-left: 10px; margin-bottom: 0;">Airbnb Chicago</h1>
+    </div>
+    """, unsafe_allow_html=True)
     st.sidebar.title("DASHBOARD")
+
+    st.sidebar.subheader("ℹ️ Dataset")
+    check_box = st.sidebar.checkbox(label = "Mostrar Dataset")
     st.sidebar.header("⚙️ Opciones")
 
     #Cambiar entre numericas y categoricas
@@ -303,9 +332,6 @@ elif View == "Modelado predictivo":
     if button_type_variable:
         if st.session_state.variable_type == 'numeric':
             st.session_state.variable_type = 'categoric'
-            for col in text_cols:
-                frequencies = text_df[col].value_counts()
-                text_df[col] = text_df[col].map(frequencies)
         else:
             st.session_state.variable_type = 'numeric'
     st.sidebar.write("Actual: " + st.session_state.variable_type)
@@ -340,6 +366,13 @@ elif View == "Modelado predictivo":
     check_box_matriz = st.sidebar.checkbox(label = "❓🔲 Matriz de confusion")
     check_box_info_log = st.sidebar.checkbox(label = "ℹ️ Informacion del modelo", key = "log_info")
 
+    #Mostrar Dataset
+    if check_box:
+        st.subheader("Dataset info:")
+        st.write(df)
+        st.write(df.columns)
+        st.write(df.describe())
+
     #Mapa de calor
     if check_box_heatmap:
         st.subheader("Heatmap")
@@ -358,25 +391,33 @@ elif View == "Modelado predictivo":
     #Regresion lineal simple
     if check_box_scatter_simple or check_box_info_simple:
         st.header("Regresion Lineal Simple")
+        if st.session_state.variable_type == 'numeric':
+            Vars_Indep = numeric_df[[x_selected_simple]] 
+            Var_Dep = numeric_df[y_selected_simple]
+            df5  = numeric_df
+        else:
+            Vars_Indep = text_df[[x_selected_simple]] 
+            Var_Dep = text_df[y_selected_simple]
+            df5 = text_df
+        model = LinearRegression()
+        model.fit(X = Vars_Indep, y = Var_Dep)
+        y_pred = model.predict(X = df5[[x_selected_simple]])
+        df_simple = df5.copy()
+        df_simple.insert(0, 'Predicciones', y_pred)
 
     #Diagramas de dispersion
     if check_box_scatter_simple:
         st.subheader("Scatter Plot")
-        figure1 = px.scatter(data_frame = df, x = x_selected_simple, 
-                                y = y_selected_simple, width = 1600, height =600)
+        df_long = pd.melt(df_simple, id_vars=x_selected_simple, value_vars=[y_selected_simple, "Predicciones"],
+                  var_name="Tipo", value_name="Valor")
+        figure1 = px.scatter(df_long, x=x_selected_simple, y="Valor", color="Tipo", color_discrete_map={
+                "Predicciones": "red"
+            }, width = 1600, height =600)
         st.plotly_chart(figure1)
 
     #Mostrar info del modelo
     if check_box_info_simple:
         st.subheader("Model info: " + " " + y_selected_simple + " vs " + x_selected_simple)
-        if st.session_state.variable_type == 'numeric':
-            Vars_Indep = numeric_df[[x_selected_simple]] 
-            Var_Dep = numeric_df[y_selected_simple]
-        else:
-            Vars_Indep = text_df[[x_selected_simple]] 
-            Var_Dep = text_df[y_selected_simple]
-        model = LinearRegression()
-        model.fit(X = Vars_Indep, y = Var_Dep)
         coef_Deter = model.score(X = Vars_Indep, y = Var_Dep)
         coef_Correl = np.sqrt(coef_Deter)
         a = model.coef_[0]
@@ -388,26 +429,38 @@ elif View == "Modelado predictivo":
     #Regresion lineal multiple
     if check_box_scatter_multi or check_box_info_multi:
         st.header("Regresion Lineal Multiple")
+        if x_selected_multi:
+            if st.session_state.variable_type == 'numeric':
+                Vars_Indep = numeric_df[x_selected_multi] 
+                Var_Dep = numeric_df[y_selected_multi]
+                df5 = numeric_df
+            else:
+                Vars_Indep = text_df[x_selected_multi] 
+                Var_Dep = text_df[y_selected_multi]
+                df5 = text_df
+            model = LinearRegression()
+            model.fit(X = Vars_Indep, y = Var_Dep)
+            y_pred = model.predict(X = df5[x_selected_multi])
+            df_multi = df5.copy()
+            df_multi.insert(0, 'Predicciones', y_pred)
+        else:
+            st.write("Selecione alguna variable x")
 
     #Diagrama de dispersion
     if check_box_scatter_multi:
         st.subheader("Scatter Plot")
-        figure1 = px.scatter(data_frame = df, x = x_selected_multi, 
-                                y = y_selected_multi, width = 1600, height =600)
-        st.plotly_chart(figure1)
+        if x_selected_multi:
+            df_long = pd.melt(df_multi, id_vars=x_selected_multi, value_vars=[y_selected_multi, "Predicciones"],
+                    var_name="Tipo", value_name="Valor")
+            figure1 = px.scatter(df_long, x=x_selected_multi, y="Valor", color="Tipo", color_discrete_map={
+                    "Predicciones": "red"
+                }, width = 1600, height =600)
+            st.plotly_chart(figure1)
     
     #Mostrar info del modelo
     if check_box_info_multi:
         if x_selected_multi:
             st.subheader(f"Model info: {y_selected_multi} vs {x_selected_multi}")
-            if st.session_state.variable_type == 'numeric':
-                Vars_Indep = numeric_df[x_selected_multi] 
-                Var_Dep = numeric_df[y_selected_multi]
-            else:
-                Vars_Indep = text_df[x_selected_multi] 
-                Var_Dep = text_df[y_selected_multi]
-            model = LinearRegression()
-            model.fit(X = Vars_Indep, y = Var_Dep)
             coef_Deter = model.score(X = Vars_Indep, y = Var_Dep)
             coef_Correl = np.sqrt(coef_Deter)
             a = model.coef_
@@ -418,8 +471,6 @@ elif View == "Modelado predictivo":
             for i, coef in enumerate(a):
                 model_math += f" + ({coef:.4f}) * {Vars_Indep.columns[i]}"
             st.write(f"Modelo matemático: {model_math}")
-        else:
-            st.write("Selecione alguna variable x")
 
     #Regresion logistica
     if check_box_matriz or check_box_info_log or check_box_box_log:
@@ -455,11 +506,54 @@ elif View == "Modelado predictivo":
     if check_box_matriz:
         st.subheader('Matriz de Confusion')
         if x_selected_log:
-            z = matriz.tolist()
-            x = ['Pred. Negativo', 'Pred. Positivo']
-            y = ['Real Negativo', 'Real Positivo']
-            figure1 = ff.create_annotated_heatmap(z, x=x, y=y, colorscale='Blues')
-            figure1.update_layout(xaxis_title='Predicción',yaxis_title='Valor Real')
+            #z = [[matriz[1][0], matriz[0][0]], 
+            #        [matriz[1][1], matriz[0][1]]]
+            #x = ['Real Positivo', 'Real Negativo']
+            #y = ['Pred. Negativo', 'Pred. Positivo']
+            #figure1 = ff.create_annotated_heatmap(z, x=x, y=y, colorscale='Blues')
+            #figure1.update_layout(xaxis_title='Valor Real',yaxis_title='Valor de Predicción')
+            #st.plotly_chart(figure1)
+
+            # Asignar un valor único por celda solo para mapear colores
+            # Verde | Rojo
+            # Rojo  | Verde
+            z = [[1, 0],
+                [4, 1]]
+
+            # Colores fijos por índice
+            colorscale = [
+                [0.0, '#64db4f'],
+                [0.25, '#64db4f'],
+                [0.25, '#e04040'],
+                [0.5, '#e04040'],
+                [0.5, '#e04040'],
+                [0.75, '#64db4f'],
+                [0.75, '#64db4f'],
+                [1.0, '#64db4f']
+            ]
+
+            # Anotaciones reales de tu matriz
+            text = [[str(matriz[1][0]), str(matriz[0][0])],
+                    [str(matriz[1][1]), str(matriz[0][1])]]
+
+            # Crear figura tipo heatmap con anotaciones
+            figure1 = go.Figure(data=go.Heatmap(
+                z=z,
+                x = ['Real Positivo', 'Real Negativo'],
+                y = ['Pred. Negativo', 'Pred. Positivo'],
+                text=text,
+                texttemplate="%{text}",
+                textfont={"size": 16},
+                colorscale=colorscale,
+                showscale=False,
+                hoverinfo="x+y+text"
+            ))
+
+            figure1.update_layout(
+                xaxis_title='Valor Real',
+                yaxis_title='Valor de Predicción'
+            )
+
             st.plotly_chart(figure1)
     
     if check_box_info_log:
@@ -468,12 +562,3 @@ elif View == "Modelado predictivo":
             st.write(f"Precision del modelo: {precision:.4f}")
             st.write(f"Exactitud del modelo: { exactitud:.4f}")
             st.write(f"Sensibilidad del modelo: {sensibilidad:.4f}")
-
-    #Mostrar Dataset
-    st.sidebar.subheader("ℹ️ Dataset")
-    check_box = st.sidebar.checkbox(label = "Mostrar Dataset")
-    if check_box:
-        st.subheader("Dataset info:")
-        st.write(df)
-        st.write(df.columns)
-        st.write(df.describe())
