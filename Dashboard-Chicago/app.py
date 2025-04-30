@@ -491,8 +491,10 @@ elif View == "Modelado predictivo":
             y_pred = algoritmo.predict(X_test)
             matriz = confusion_matrix(y_test, y_pred, labels=["Other Value", val_selected_log])
             precision = precision_score(y_test, y_pred, average="binary", pos_label=val_selected_log)
+            precision_other = precision_score(y_test, y_pred, average="binary", pos_label="Other Value")
             exactitud = accuracy_score(y_test, y_pred)
             sensibilidad = recall_score(y_test, y_pred, average="binary", pos_label=val_selected_log)
+            sensibilidad_other = recall_score(y_test, y_pred, average="binary", pos_label="Other Value")
         else:
             st.write("Selecione alguna variable x")
     
@@ -559,6 +561,14 @@ elif View == "Modelado predictivo":
     if check_box_info_log:
         st.subheader(f"Model info: {y_selected_log} vs {x_selected_log}")
         if x_selected_log:
-            st.write(f"Precision del modelo: {precision:.4f}")
             st.write(f"Exactitud del modelo: { exactitud:.4f}")
+
+            st.write(f"**Valor: {val_selected_log}**")
+            st.write(f"Precision del modelo: {precision:.4f}")
             st.write(f"Sensibilidad del modelo: {sensibilidad:.4f}")
+
+            st.write(f"**Valor: Otro**")
+            st.write(f"Precision del modelo: {precision_other:.4f}")
+            st.write(f"Sensibilidad del modelo: {sensibilidad_other:.4f}")
+            
+            st.write(f"Exactitud del modelo: { exactitud:.4f}")
