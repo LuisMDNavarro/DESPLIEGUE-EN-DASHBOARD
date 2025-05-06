@@ -1,0 +1,12 @@
+[theme]
+#Primera paleta de colores
+#primaryColor = "#FF5733"   # Color principal
+#backgroundColor = "#303030"  # Color de fondo del body
+#secondaryBackgroundColor = "#900C3F"  # Color del fondo del sidebar
+#textColor = "#FFFFFF"  # Color del texto
+
+#Segunda paleta de colores
+primaryColor = "#000000"   # Color principal
+backgroundColor = "#2a2a2a"  # Color de fondo del body
+secondaryBackgroundColor = "#277fa5"  # Color del fondo del sidebar
+textColor = "#FFFFFF"  # Color del texto
