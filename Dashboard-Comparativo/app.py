@@ -188,11 +188,12 @@ elif View == "Modelado explicativo":
     st.sidebar.subheader("ℹ️ Dataset")
     check_box = st.sidebar.checkbox(label = "Mostrar Dataset")
     if check_box:
+        #Chicago
         st.subheader("Chicago dataset info:")
         st.write(df_chicago)
         st.write(df_chicago.columns)
         st.write(df_chicago.describe())
-
+        #Mexico
         st.subheader("México dataset info:")
         st.write(df_mexico)
         st.write(df_mexico.columns)
@@ -251,7 +252,9 @@ elif View == "Modelado explicativo":
             st.header("Análisis univariado de: " + category_variable_selected)
         else:
             st.header("Análisis univariado de: " + numeric_variable_selected)
+        #Chicago
         table2 = table[table['frequency'] > frequency]
+        #Mexico
         table4 = table3[table3['frequency'] > frequency]
         left, right = st.columns([1, 1])
         right.image("img/usa.png", width=80)
@@ -300,9 +303,9 @@ elif View == "Modelado explicativo":
             y = "frequency", width = 1600, height =600)
         left, right = st.columns([1, 1])
         right.image("img/usa.png", width=80)
-        right.plotly_chart(figure2)
+        right.plotly_chart(figure1)
         left.image("img/mx.jpg", width=80)
-        left.plotly_chart(figure1)
+        left.plotly_chart(figure2)
 
     if check_box_bars:
         st.subheader("Bar Plot")
@@ -331,9 +334,9 @@ elif View == "Modelado explicativo":
 
         left, right = st.columns([1, 1])
         right.image("img/usa.png", width=80)
-        right.plotly_chart(figure2)
+        right.plotly_chart(figure1)
         left.image("img/mx.jpg", width=80)
-        left.plotly_chart(figure1)
+        left.plotly_chart(figure2)
 
     if check_box_scatter:
         st.subheader("Scatter Plot")
@@ -362,9 +365,9 @@ elif View == "Modelado explicativo":
 
         left, right = st.columns([1, 1])
         right.image("img/usa.png", width=80)
-        right.plotly_chart(figure2)
+        right.plotly_chart(figure1)
         left.image("img/mx.jpg", width=80)
-        left.plotly_chart(figure1)
+        left.plotly_chart(figure2)
 
     if check_box_area:
         st.subheader("Area Plot")
@@ -393,9 +396,9 @@ elif View == "Modelado explicativo":
 
         left, right = st.columns([1, 1])
         right.image("img/usa.png", width=80)
-        right.plotly_chart(figure2)
+        right.plotly_chart(figure1)
         left.image("img/mx.jpg", width=80)
-        left.plotly_chart(figure1)
+        left.plotly_chart(figure2)
 
     if check_box_pie:
         st.subheader("Pie Plot")
@@ -424,24 +427,28 @@ elif View == "Modelado explicativo":
 
         left, right = st.columns([1, 1])
         right.image("img/usa.png", width=80)
-        right.plotly_chart(figure2)
+        right.plotly_chart(figure1)
         left.image("img/mx.jpg", width=80)
-        left.plotly_chart(figure1)
+        left.plotly_chart(figure2)
 
     if check_box_box:
         st.subheader("Box Plot")
         if st.session_state.variable_type == 'categoric':
+            #Chicago
             figure1 = px.box(df_chicago, x=category_variable_selected, orientation='h')
+            #Mexico
             figure2 = px.box(df_mexico, x=category_variable_selected, orientation='h')
         else:
+            #Chicago
             figure1 = px.box(df_chicago, x=numeric_variable_selected, orientation='h')
+            #Mexico
             figure2 = px.box(df_mexico, x=numeric_variable_selected, orientation='h')
 
         left, right = st.columns([1, 1])
         right.image("img/usa.png", width=80)
-        right.plotly_chart(figure2)
+        right.plotly_chart(figure1)
         left.image("img/mx.jpg", width=80)
-        left.plotly_chart(figure1)
+        left.plotly_chart(figure2)
 
 ##########################################
 #Contenido de la vista 2
@@ -452,9 +459,13 @@ elif View == "Modelado predictivo":
         st.session_state.variable_type = 'numeric'
 
     if st.session_state.variable_type == 'categoric':
-            for col in text_cols:
+            for col in chicago_text_df:
+                #Chicago
                 frequencies = chicago_text_df[col].value_counts()
                 chicago_text_df[col] = chicago_text_df[col].map(frequencies)
+                #Mexico
+                frequencies2 = mexico_text_df[col].value_counts()
+                mexico_text_df[col] = mexico_text_df[col].map(frequencies2)
 
     #Titulos y encabezados 
     st.sidebar.markdown(f"""
@@ -505,17 +516,17 @@ elif View == "Modelado predictivo":
     dichotomous_column = df_chicago[y_selected_log]
     unique_categories = dichotomous_column.unique()
     val_selected_log = st.sidebar.selectbox(label = "Valor a predecir", options = unique_categories)
-    check_box_box_log = st.sidebar.checkbox(label = "📦 Grafico de caja", key= "log_box")
     check_box_matriz = st.sidebar.checkbox(label = "❓🔲 Matriz de confusion")
     check_box_info_log = st.sidebar.checkbox(label = "ℹ️ Informacion del modelo", key = "log_info")
 
     #Mostrar Dataset
     if check_box:
+        #Chicago
         st.subheader("Chicago dataset info:")
         st.write(df_chicago)
         st.write(df_chicago.columns)
         st.write(df_chicago.describe())
-
+        #Mexico
         st.subheader("México dataset info:")
         st.write(df_mexico)
         st.write(df_mexico.columns)
@@ -525,72 +536,149 @@ elif View == "Modelado predictivo":
     if check_box_heatmap:
         st.subheader("Heatmap")
         if st.session_state.variable_type == 'numeric':
+            #Chicago
             correlation = abs(chicago_numeric_df.corr())
+            #Mexico
+            correlation2 = abs(mexico_numeric_df.corr())
         else:
+            #Chicago
             correlation = abs(chicago_text_df.corr())
+            #Mexico
+            correlation2 = abs(mexico_text_df.corr())
 
+        #Chicago
         figure1 = px.imshow(
             correlation,
             text_auto=True,
             color_continuous_scale="Viridis",
             aspect="auto"
         )
-        st.plotly_chart(figure1)
+        #Mexico
+        figure2 = px.imshow(
+            correlation2,
+            text_auto=True,
+            color_continuous_scale="Viridis",
+            aspect="auto"
+        )
+        left, right = st.columns([1, 1])
+        right.image("img/usa.png", width=80)
+        right.plotly_chart(figure1)
+        left.image("img/mx.jpg", width=80)
+        left.plotly_chart(figure2)
+
     #Regresion lineal simple
     if check_box_scatter_simple or check_box_info_simple:
         st.header("Regresion Lineal Simple")
         if st.session_state.variable_type == 'numeric':
-            Vars_Indep = chicago_numeric_df[[x_selected_simple]] 
-            Var_Dep = chicago_numeric_df[y_selected_simple]
+            #Chicago
+            Vars_Indep_chicago = chicago_numeric_df[[x_selected_simple]] 
+            Var_Dep_chicago = chicago_numeric_df[y_selected_simple]
             df5  = chicago_numeric_df
+            #Mexico
+            Vars_Indep_mexico = mexico_numeric_df[[x_selected_simple]] 
+            Var_Dep_mexico = mexico_numeric_df[y_selected_simple]
+            df6  = mexico_numeric_df
         else:
-            Vars_Indep = chicago_text_df[[x_selected_simple]] 
-            Var_Dep = chicago_text_df[y_selected_simple]
+            #Chicago
+            Vars_Indep_chicago = chicago_text_df[[x_selected_simple]] 
+            Var_Dep_chicago = chicago_text_df[y_selected_simple]
             df5 = chicago_text_df
-        model = LinearRegression()
-        model.fit(X = Vars_Indep, y = Var_Dep)
-        y_pred = model.predict(X = df5[[x_selected_simple]])
-        df_simple = df5.copy()
-        df_simple.insert(0, 'Predicciones', y_pred)
+            #Mexico
+            Vars_Indep_mexico = mexico_text_df[[x_selected_simple]] 
+            Var_Dep_mexico = mexico_text_df[y_selected_simple]
+            df6 = mexico_text_df
+        #Chicago
+        model_chicago = LinearRegression()
+        model_chicago.fit(X = Vars_Indep_chicago, y = Var_Dep_chicago)
+        y_pred = model_chicago.predict(X = df5[[x_selected_simple]])
+        df_simple_chicago = df5.copy()
+        df_simple_chicago.insert(0, 'Predicciones', y_pred)
+        #Mexico
+        model_mexico = LinearRegression()
+        model_mexico.fit(X = Vars_Indep_mexico, y = Var_Dep_mexico)
+        y_pred = model_mexico.predict(X = df6[[x_selected_simple]])
+        df_simple_mexico = df6.copy()
+        df_simple_mexico.insert(0, 'Predicciones', y_pred)
+
 
     #Diagramas de dispersion
     if check_box_scatter_simple:
         st.subheader("Scatter Plot")
-        df_long = pd.melt(df_simple, id_vars=x_selected_simple, value_vars=[y_selected_simple, "Predicciones"],
+        #Chicago
+        df_long = pd.melt(df_simple_chicago, id_vars=x_selected_simple, value_vars=[y_selected_simple, "Predicciones"],
                   var_name="Tipo", value_name="Valor")
         figure1 = px.scatter(df_long, x=x_selected_simple, y="Valor", color="Tipo", color_discrete_map={
                 "Predicciones": "red"
             }, width = 1600, height =600)
-        st.plotly_chart(figure1)
+        #Mexico
+        df_long = pd.melt(df_simple_mexico, id_vars=x_selected_simple, value_vars=[y_selected_simple, "Predicciones"],
+                  var_name="Tipo", value_name="Valor")
+        figure2 = px.scatter(df_long, x=x_selected_simple, y="Valor", color="Tipo", color_discrete_map={
+                "Predicciones": "red"
+            }, width = 1600, height =600)
+        left, right = st.columns([1, 1])
+        right.image("img/usa.png", width=80)
+        right.plotly_chart(figure1)
+        left.image("img/mx.jpg", width=80)
+        left.plotly_chart(figure2)
 
     #Mostrar info del modelo
     if check_box_info_simple:
         st.subheader("Model info: " + " " + y_selected_simple + " vs " + x_selected_simple)
-        coef_Deter = model.score(X = Vars_Indep, y = Var_Dep)
+        left, right = st.columns([1, 1])
+        #Chicago
+        coef_Deter = model_chicago.score(X = Vars_Indep_chicago, y = Var_Dep_chicago)
         coef_Correl = np.sqrt(coef_Deter)
-        a = model.coef_[0]
-        b = model.intercept_
-        st.write(f"R (Indice de correlacion) =  {coef_Correl:.4f}")
-        st.write(f"R^2 (Indice de determinacion) = {coef_Deter:.4f}")
-        st.write(f"Modelo matemático: y = {a:.4f}x + {b:.4f}")
+        a = model_chicago.coef_[0]
+        b = model_chicago.intercept_
+        right.image("img/usa.png", width=80)
+        right.write(f"R (Indice de correlacion) =  {coef_Correl:.4f}")
+        right.write(f"R^2 (Indice de determinacion) = {coef_Deter:.4f}")
+        right.write(f"Modelo matemático: y = {a:.4f}x + {b:.4f}")
+        #Mexico
+        coef_Deter = model_mexico.score(X = Vars_Indep_mexico, y = Var_Dep_mexico)
+        coef_Correl = np.sqrt(coef_Deter)
+        a = model_mexico.coef_[0]
+        b = model_mexico.intercept_
+        left.image("img/mx.jpg", width=80)
+        left.write(f"R (Indice de correlacion) =  {coef_Correl:.4f}")
+        left.write(f"R^2 (Indice de determinacion) = {coef_Deter:.4f}")
+        left.write(f"Modelo matemático: y = {a:.4f}x + {b:.4f}")
 
     #Regresion lineal multiple
     if check_box_scatter_multi or check_box_info_multi:
         st.header("Regresion Lineal Multiple")
         if x_selected_multi:
             if st.session_state.variable_type == 'numeric':
+                #Chicago
                 Vars_Indep = chicago_numeric_df[x_selected_multi] 
                 Var_Dep = chicago_numeric_df[y_selected_multi]
                 df5 = chicago_numeric_df
+                #Mexico
+                Vars_Indep2 = mexico_numeric_df[x_selected_multi]
+                Var_Dep2 = mexico_numeric_df[y_selected_multi]
+                df6 = mexico_numeric_df
             else:
+                #Chicago
                 Vars_Indep = chicago_text_df[x_selected_multi] 
                 Var_Dep = chicago_text_df[y_selected_multi]
                 df5 = chicago_text_df
-            model = LinearRegression()
-            model.fit(X = Vars_Indep, y = Var_Dep)
-            y_pred = model.predict(X = df5[x_selected_multi])
+                #Mexico
+                Vars_Indep2 = mexico_text_df[x_selected_multi]
+                Var_Dep2 = mexico_text_df[y_selected_multi]
+                df6 = mexico_text_df
+            #Chicago
+            model_chicago = LinearRegression()
+            model_chicago.fit(X = Vars_Indep, y = Var_Dep)
+            y_pred = model_chicago.predict(X = df5[x_selected_multi])
             df_multi = df5.copy()
             df_multi.insert(0, 'Predicciones', y_pred)
+            #Mexico
+            model_mexico = LinearRegression()
+            model_mexico.fit(X = Vars_Indep2, y = Var_Dep2)
+            y_pred = model_mexico.predict(X = df6[x_selected_multi])
+            df_multi2 = df6.copy()
+            df_multi2.insert(0, 'Predicciones', y_pred)
         else:
             st.write("Selecione alguna variable x")
 
@@ -598,38 +686,65 @@ elif View == "Modelado predictivo":
     if check_box_scatter_multi:
         st.subheader("Scatter Plot")
         if x_selected_multi:
+            #Chicago
             df_long = pd.melt(df_multi, id_vars=x_selected_multi, value_vars=[y_selected_multi, "Predicciones"],
                     var_name="Tipo", value_name="Valor")
             figure1 = px.scatter(df_long, x=x_selected_multi, y="Valor", color="Tipo", color_discrete_map={
                     "Predicciones": "red"
                 }, width = 1600, height =600)
-            st.plotly_chart(figure1)
+            #Mexico
+            df_long = pd.melt(df_multi2, id_vars=x_selected_multi, value_vars=[y_selected_multi, "Predicciones"],
+                    var_name="Tipo", value_name="Valor")
+            figure2 = px.scatter(df_long, x=x_selected_multi, y="Valor", color="Tipo", color_discrete_map={
+                    "Predicciones": "red"
+                }, width = 1600, height =600)
+            left, right = st.columns([1, 1])
+            right.image("img/usa.png", width=80)
+            right.plotly_chart(figure1)
+            left.image("img/mx.jpg", width=80)
+            left.plotly_chart(figure2)
     
     #Mostrar info del modelo
     if check_box_info_multi:
         if x_selected_multi:
             st.subheader(f"Model info: {y_selected_multi} vs {x_selected_multi}")
-            coef_Deter = model.score(X = Vars_Indep, y = Var_Dep)
+            left, right = st.columns([1, 1])
+            #Chicago
+            coef_Deter = model_chicago.score(X = Vars_Indep, y = Var_Dep)
             coef_Correl = np.sqrt(coef_Deter)
-            a = model.coef_
-            b = model.intercept_
-            st.write(f"R (Indice de correlacion) =  {coef_Correl:.4f}")
-            st.write(f"R^2 (Indice de determinacion) = {coef_Deter:.4f}")
+            a = model_chicago.coef_
+            b = model_chicago.intercept_
+            left.image("img/mx.jpg", width=80)
+            left.write(f"R (Indice de correlacion) =  {coef_Correl:.4f}")
+            left.write(f"R^2 (Indice de determinacion) = {coef_Deter:.4f}")
             model_math = "y = " + f"{b:.4f}"
             for i, coef in enumerate(a):
                 model_math += f" + ({coef:.4f}) * {Vars_Indep.columns[i]}"
-            st.write(f"Modelo matemático: {model_math}")
+            left.write(f"Modelo matemático: {model_math}")
+            #Mexico
+            coef_Deter = model_mexico.score(X = Vars_Indep2, y = Var_Dep2)
+            coef_Correl = np.sqrt(coef_Deter)
+            a = model_mexico.coef_
+            b = model_mexico.intercept_
+            right.image("img/usa.png", width=80)
+            right.write(f"R (Indice de correlacion) =  {coef_Correl:.4f}")
+            right.write(f"R^2 (Indice de determinacion) = {coef_Deter:.4f}")
+            model_math = "y = " + f"{b:.4f}"
+            for i, coef in enumerate(a):
+                model_math += f" + ({coef:.4f}) * {Vars_Indep.columns[i]}"
+            right.write(f"Modelo matemático: {model_math}")
 
     #Regresion logistica
-    if check_box_matriz or check_box_info_log or check_box_box_log:
+    if check_box_matriz or check_box_info_log:
         st.header("Regresion Logistica")
         if x_selected_log:
+            #Chicago
             df2 = df_chicago.copy()
             df2[y_selected_log] =df2[y_selected_log].mask(df2[y_selected_log] != val_selected_log, "Other Value")
-            Vars_Indep = df2[x_selected_log]
-            Var_Dep = df2[y_selected_log]
-            X = Vars_Indep
-            y = Var_Dep
+            Vars_Indep_chicago = df2[x_selected_log]
+            Var_Dep_chicago = df2[y_selected_log]
+            X = Vars_Indep_chicago
+            y = Var_Dep_chicago
             X_train, X_test, y_train, y_test =train_test_split(X, y, test_size= 0.3, random_state=None)
             escalar = StandardScaler()
             X_train = escalar.fit_transform(X_train)
@@ -637,28 +752,40 @@ elif View == "Modelado predictivo":
             algoritmo = LogisticRegression()
             algoritmo.fit(X_train, y_train)
             y_pred = algoritmo.predict(X_test)
-            matriz = confusion_matrix(y_test, y_pred, labels=["Other Value", val_selected_log])
-            precision = precision_score(y_test, y_pred, average="binary", pos_label=val_selected_log)
-            precision_other = precision_score(y_test, y_pred, average="binary", pos_label="Other Value")
-            exactitud = accuracy_score(y_test, y_pred)
-            sensibilidad = recall_score(y_test, y_pred, average="binary", pos_label=val_selected_log)
-            sensibilidad_other = recall_score(y_test, y_pred, average="binary", pos_label="Other Value")
+            matriz_chicago = confusion_matrix(y_test, y_pred, labels=["Other Value", val_selected_log])
+            precision_chicago = precision_score(y_test, y_pred, average="binary", pos_label=val_selected_log)
+            precision_other_chicago = precision_score(y_test, y_pred, average="binary", pos_label="Other Value")
+            exactitud_chicago = accuracy_score(y_test, y_pred)
+            sensibilidad_chicago = recall_score(y_test, y_pred, average="binary", pos_label=val_selected_log)
+            sensibilidad_other_chicago = recall_score(y_test, y_pred, average="binary", pos_label="Other Value")
+            #Mexico
+            df2 = df_mexico.copy()
+            df2[y_selected_log] =df2[y_selected_log].mask(df2[y_selected_log] != val_selected_log, "Other Value")
+            Vars_Indep_mexico = df2[x_selected_log]
+            Var_Dep_mexico = df2[y_selected_log]
+            X = Vars_Indep_mexico
+            y = Var_Dep_mexico
+            X_train, X_test, y_train, y_test =train_test_split(X, y, test_size= 0.3, random_state=None)
+            escalar = StandardScaler()
+            X_train = escalar.fit_transform(X_train)
+            X_test = escalar.transform(X_test)
+            algoritmo_chicago = LogisticRegression()
+            algoritmo_chicago.fit(X_train, y_train)
+            y_pred = algoritmo_chicago.predict(X_test)
+            matriz_mexico = confusion_matrix(y_test, y_pred, labels=["Other Value", val_selected_log])
+            precision_mexico = precision_score(y_test, y_pred, average="binary", pos_label=val_selected_log)
+            precision_other_mexico = precision_score(y_test, y_pred, average="binary", pos_label="Other Value")
+            exactitud_mexico = accuracy_score(y_test, y_pred)
+            sensibilidad_mexico = recall_score(y_test, y_pred, average="binary", pos_label=val_selected_log)
+            sensibilidad_other_mexico = recall_score(y_test, y_pred, average="binary", pos_label="Other Value")
         else:
             st.write("Selecione alguna variable x")
-    
-    if check_box_box_log:
-        st.subheader("Box Plot")
-        st.write("Nota: Se recomienda usar solo una varibale X para este grafico")
-        if x_selected_log:
-            figure1 = px.box(df_chicago, x=x_selected_log, y=y_selected_log )
-            st.plotly_chart(figure1)
 
     if check_box_matriz:
         st.subheader('Matriz de Confusion')
         if x_selected_log:
             z = [[1, 0],
                 [4, 1]]
-
             # Colores fijos por índice
             colorscale = [
                 [0.0, '#64db4f'],
@@ -670,11 +797,10 @@ elif View == "Modelado predictivo":
                 [0.75, '#64db4f'],
                 [1.0, '#64db4f']
             ]
-
+            #Chicago
             # Anotaciones reales de tu matriz
-            text = [[str(matriz[1][0]), str(matriz[0][0])],
-                    [str(matriz[1][1]), str(matriz[0][1])]]
-
+            text = [[str(matriz_chicago[1][0]), str(matriz_chicago[0][0])],
+                    [str(matriz_chicago[1][1]), str(matriz_chicago[0][1])]]
             # Crear figura tipo heatmap con anotaciones
             figure1 = go.Figure(data=go.Heatmap(
                 z=z,
@@ -687,25 +813,55 @@ elif View == "Modelado predictivo":
                 showscale=False,
                 hoverinfo="x+y+text"
             ))
-
             figure1.update_layout(
                 xaxis_title='Valor Real',
                 yaxis_title='Valor de Predicción'
             )
-
-            st.plotly_chart(figure1)
+            #Mexico
+            # Anotaciones reales de tu matriz
+            text = [[str(matriz_mexico[1][0]), str(matriz_mexico[0][0])],
+                    [str(matriz_mexico[1][1]), str(matriz_mexico[0][1])]]
+            # Crear figura tipo heatmap con anotaciones
+            figure2 = go.Figure(data=go.Heatmap(
+                z=z,
+                x = ['Real Positivo', 'Real Negativo'],
+                y = ['Pred. Negativo', 'Pred. Positivo'],
+                text=text,
+                texttemplate="%{text}",
+                textfont={"size": 16},
+                colorscale=colorscale,
+                showscale=False,
+                hoverinfo="x+y+text"
+            ))
+            figure2.update_layout(
+                xaxis_title='Valor Real',
+                yaxis_title='Valor de Predicción'
+            )
+            left, right = st.columns([1, 1])
+            right.image("img/usa.png", width=80)
+            right.plotly_chart(figure1)
+            left.image("img/mx.jpg", width=80)
+            left.plotly_chart(figure2)
     
     if check_box_info_log:
         st.subheader(f"Model info: {y_selected_log} vs {x_selected_log}")
         if x_selected_log:
-            st.write(f"Exactitud del modelo: { exactitud:.4f}")
-
-            st.write(f"**Valor: {val_selected_log}**")
-            st.write(f"Precision del modelo: {precision:.4f}")
-            st.write(f"Sensibilidad del modelo: {sensibilidad:.4f}")
-
-            st.write(f"**Valor: Otro**")
-            st.write(f"Precision del modelo: {precision_other:.4f}")
-            st.write(f"Sensibilidad del modelo: {sensibilidad_other:.4f}")
-            
-            st.write(f"Exactitud del modelo: { exactitud:.4f}")
+            left, right = st.columns([1, 1])
+            #Mexico
+            left.image("img/mx.jpg", width=80)
+            left.write(f"Exactitud del modelo: { exactitud_mexico:.4f}")
+            left.write(f"**Valor: {val_selected_log}**")
+            left.write(f"Precision del modelo: {precision_mexico:.4f}")
+            left.write(f"Sensibilidad del modelo: {sensibilidad_mexico:.4f}")
+            left.write(f"**Valor: Otro**")
+            left.write(f"Precision del modelo: {precision_other_mexico:.4f}")
+            left.write(f"Sensibilidad del modelo: {sensibilidad_other_mexico:.4f}")
+            #Chicago
+            right.image("img/usa.png", width=80)
+            right.write(f"Exactitud del modelo: { exactitud_chicago:.4f}")
+            right.write(f"**Valor: {val_selected_log}**")
+            right.write(f"Precision del modelo: {precision_chicago:.4f}")
+            right.write(f"Sensibilidad del modelo: {sensibilidad_chicago:.4f}")
+            right.write(f"**Valor: Otro**")
+            right.write(f"Precision del modelo: {precision_other_chicago:.4f}")
+            right.write(f"Sensibilidad del modelo: {sensibilidad_other_chicago:.4f}")
