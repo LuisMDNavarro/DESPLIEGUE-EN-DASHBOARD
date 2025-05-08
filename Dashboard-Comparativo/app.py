@@ -31,13 +31,13 @@ st.set_page_config(layout="wide")
 #Creamos la funcion de carga de datos
 def load_data():
     #Lectura del archivo csv
-    df_chicago =pd.read_csv("50_sin_nulos_ni_atipicos_Chicago_Illinois_UnitedStates.csv")
-    df_chicago = df_chicago.drop(['Unnamed: 0', 'Unnamed: 0.1'], axis = 1)
+    df_chicago =pd.read_csv("Chicago.csv")
+    #df_chicago = df_chicago.drop(['Unnamed: 0', 'Unnamed: 0.1'], axis = 1)
 
-    df_mexico =pd.read_csv("50_sin_nulos_ni_atipicos_MexicoCity_DistritoFederal_Mexico.csv")
-    df_mexico = df_mexico.drop(['Unnamed: 0'], axis = 1)
-    mexico_numeric_df = df_chicago.select_dtypes(['float', 'int'])
-    mexico_text_df = df_chicago.select_dtypes(['object']) 
+    df_mexico =pd.read_csv("Mexico.csv")
+    #df_mexico = df_mexico.drop(['Unnamed: 0'], axis = 1)
+    mexico_numeric_df = df_mexico.select_dtypes(['float', 'int'])
+    mexico_text_df = df_mexico.select_dtypes(['object']) 
 
     #Selecciono las columnas tipo numericas del dataframe
     chicago_numeric_df = df_chicago.select_dtypes(['float', 'int'])   #Devuelve columnas
